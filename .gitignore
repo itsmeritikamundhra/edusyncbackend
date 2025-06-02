@@ -1,0 +1,14 @@
+bin/
+obj/
+*.user
+.vs/
+*.suo
+*.log
+*.mdf
+*.ldf
+*.db
+.env
+Migrations/
+node_modules/
+dist/
+*.http
