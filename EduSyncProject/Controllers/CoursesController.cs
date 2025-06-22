@@ -18,10 +18,12 @@ namespace EduSyncProject.Controllers
     public class CoursesController : ControllerBase
     {
         private readonly AppDbContext _context;
+        private readonly EduSyncProject.Helpers.BlobService _blobService;
 
-        public CoursesController(AppDbContext context)
+        public CoursesController(AppDbContext context, EduSyncProject.Helpers.BlobService blobService)
         {
             _context = context;
+            _blobService = blobService;
         }
 
         // GET: api/Courses
@@ -74,7 +76,7 @@ namespace EduSyncProject.Controllers
         }
 
         // PUT: api/Courses/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+        
         [HttpPut("{id}")]
         [Authorize(Roles = "Instructor")]
         public async Task<IActionResult> PutCourse(Guid id, CourseUpdateDTO courseDto)
@@ -211,6 +213,22 @@ namespace EduSyncProject.Controllers
                     yourInstructorId = instructorId,
                     courseTitle = course.Title
                 });
+            }
+            // Delete the associated blob/file if MediaUrl exists
+            if (!string.IsNullOrEmpty(course.MediaUrl))
+            {
+                try
+                {
+                    var uri = new Uri(course.MediaUrl);
+                    string fileName = Uri.UnescapeDataString(uri.Segments.Last());
+                    Console.WriteLine($"Trying to delete file: '{fileName}' from container: '{_blobService.GetType().GetProperty("_containerName", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)?.GetValue(_blobService)}'");
+                    await _blobService.DeleteFileAsync(fileName);
+                }
+                catch (Exception ex)
+                {
+                    // Log the error, but do not block course deletion
+                    Console.WriteLine($"Failed to delete blob: {ex}");
+                }
             }
 
             using var transaction = await _context.Database.BeginTransactionAsync();

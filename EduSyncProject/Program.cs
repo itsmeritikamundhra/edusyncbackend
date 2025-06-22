@@ -5,6 +5,9 @@ using EduSyncProject.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.ApplicationInsights.AspNetCore.Extensions;
+using Microsoft.ApplicationInsights.DependencyCollector;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Microsoft.AspNetCore.Cors;
@@ -23,7 +26,7 @@ builder.Services.AddCors(options =>
         builder =>
         {
             builder
-                .SetIsOriginAllowed(_ => true) 
+                .SetIsOriginAllowed(_ => true)
                 .AllowAnyMethod()
                 .AllowAnyHeader()
                 .AllowCredentials();
@@ -102,6 +105,20 @@ builder.Services.AddSwaggerGen(c =>
 
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+var eventHubConfig = builder.Configuration.GetSection("EventHub");
+builder.Services.AddSingleton(new EventHubService(
+    eventHubConfig["ConnectionString"],
+    eventHubConfig["HubName"]
+));
+builder.Services.AddApplicationInsightsTelemetry();
+
+
+var azureStorageConfig = builder.Configuration.GetSection("AzureStorage");
+builder.Services.AddSingleton(new BlobService(
+    azureStorageConfig["ConnectionString"],
+    azureStorageConfig["CourseMediaContainer"]
+));
 
 var app = builder.Build();
 

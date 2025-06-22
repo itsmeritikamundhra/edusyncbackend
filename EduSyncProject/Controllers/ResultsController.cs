@@ -9,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using EduSyncProject.Helpers;
 
 namespace EduSyncProject.Controllers
 {
@@ -18,10 +19,12 @@ namespace EduSyncProject.Controllers
     public class ResultsController : ControllerBase
     {
         private readonly AppDbContext _context;
+        private readonly EventHubService _eventHubService;
 
-        public ResultsController(AppDbContext context)
+        public ResultsController(AppDbContext context, EventHubService eventHubService)
         {
             _context = context;
+            _eventHubService = eventHubService;
         }
 
         // GET: api/Results
@@ -104,6 +107,8 @@ namespace EduSyncProject.Controllers
             try
             {
                 await _context.SaveChangesAsync();
+                // Send event to Event Hub
+                await _eventHubService.SendMessageAsync($"Result updated: {id} at {DateTime.UtcNow}");
             }
             catch (DbUpdateConcurrencyException)
             {
@@ -168,6 +173,9 @@ namespace EduSyncProject.Controllers
             _context.Results.Add(result);
             await _context.SaveChangesAsync();
 
+            // Send event to Event Hub
+            await _eventHubService.SendMessageAsync($"Result submitted: {result.ResultId} for assessment {assessment.Title} by user {user.Email} at {DateTime.UtcNow}");
+
             var readDto = new ResultReadDTO
             {
                 Id = result.ResultId.ToString(),
@@ -196,6 +204,9 @@ namespace EduSyncProject.Controllers
 
             _context.Results.Remove(result);
             await _context.SaveChangesAsync();
+
+            // Send event to Event Hub
+            await _eventHubService.SendMessageAsync($"Result deleted: {id} at {DateTime.UtcNow}");
 
             return NoContent();
         }

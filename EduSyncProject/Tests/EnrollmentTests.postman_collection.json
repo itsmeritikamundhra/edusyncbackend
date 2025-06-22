@@ -1,0 +1,268 @@
+{
+    "info": {
+        "name": "Course Enrollment Tests",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "item": [
+        {
+            "name": "Authentication",
+            "item": [
+                {
+                    "name": "Student Login",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"email\": \"student@example.com\",\n    \"password\": \"your_student_password\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/Auth/login"
+                        }
+                    }
+                },
+                {
+                    "name": "Instructor Login",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"email\": \"instructor@example.com\",\n    \"password\": \"your_instructor_password\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/Auth/login"
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Course Management",
+            "item": [
+                {
+                    "name": "Create Course",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{instructorToken}}"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"title\": \"Test Course 101\",\n    \"description\": \"A test course for enrollment\",\n    \"mediaUrl\": \"https://example.com/course-image.jpg\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/Courses"
+                        }
+                    }
+                },
+                {
+                    "name": "List All Courses",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{studentToken}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/Courses"
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Enrollments",
+            "item": [
+                {
+                    "name": "Student Self-Enrollment",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{studentToken}}"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"courseId\": \"{{courseId}}\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/Enrollments"
+                        }
+                    }
+                },
+                {
+                    "name": "Instructor Enrolling Student",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{instructorToken}}"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"courseId\": \"{{courseId}}\",\n    \"studentId\": \"{{studentId}}\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/Enrollments"
+                        }
+                    }
+                },
+                {
+                    "name": "List Student Enrollments",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{studentToken}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/Enrollments"
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Error Cases",
+            "item": [
+                {
+                    "name": "Enroll in Same Course Again",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{studentToken}}"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"courseId\": \"{{courseId}}\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/Enrollments"
+                        }
+                    }
+                },
+                {
+                    "name": "Enroll in Non-existent Course",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{studentToken}}"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"courseId\": \"00000000-0000-0000-0000-000000000000\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/Enrollments"
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Unenrollment",
+            "item": [
+                {
+                    "name": "Student Self-Unenrollment",
+                    "request": {
+                        "method": "DELETE",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{studentToken}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/Enrollments/{{courseId}}"
+                        }
+                    }
+                },
+                {
+                    "name": "Instructor Removing Student",
+                    "request": {
+                        "method": "DELETE",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{instructorToken}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/Enrollments/{{courseId}}?studentId={{studentId}}"
+                        }
+                    }
+                }
+            ]
+        }
+    ],
+    "variable": [
+        {
+            "key": "baseUrl",
+            "value": "https://your-api-url"
+        },
+        {
+            "key": "studentToken",
+            "value": ""
+        },
+        {
+            "key": "instructorToken",
+            "value": ""
+        },
+        {
+            "key": "courseId",
+            "value": ""
+        },
+        {
+            "key": "studentId",
+            "value": ""
+        }
+    ]
+} 
