@@ -4,18 +4,18 @@ using Azure.Storage.Blobs.Models;
 using Microsoft.AspNetCore.Http;
 using System.Net.Http;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Configuration;
 
 namespace EduSyncProject.Helpers
 {
     public class BlobService
     {
         private readonly string _connectionString;
-        private readonly string _containerName = "coursefiles";
+        private readonly string _containerName;
 
-        public BlobService(IConfiguration configuration)
+        public BlobService(string connectionString, string containerName)
         {
-            _connectionString = configuration["AzureBlobStorage:ConnectionString"];
+            _connectionString = connectionString;
+            _containerName = containerName;
         }
 
         // ✅ Upload from URL (e.g. dummy.pdf hosted online)
