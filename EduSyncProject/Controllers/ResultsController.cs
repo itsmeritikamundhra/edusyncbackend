@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using EduSyncProject.Helpers;
+using System.Text.Json;
 
 namespace EduSyncProject.Controllers
 {
@@ -107,8 +108,15 @@ namespace EduSyncProject.Controllers
             try
             {
                 await _context.SaveChangesAsync();
-                // Send event to Event Hub
-                await _eventHubService.SendMessageAsync($"Result updated: {id} at {DateTime.UtcNow}");
+                // Send event to Event Hub (now as JSON)
+                var json = JsonSerializer.Serialize(new {
+                    EventType = "ResultUpdated",
+                    ResultId = id,
+                    Score = result.Score,
+                    AttemptDate = result.AttemptDate,
+                    Timestamp = DateTime.UtcNow
+                });
+                await _eventHubService.SendMessageAsync(json);
             }
             catch (DbUpdateConcurrencyException)
             {
@@ -173,8 +181,19 @@ namespace EduSyncProject.Controllers
             _context.Results.Add(result);
             await _context.SaveChangesAsync();
 
-            // Send event to Event Hub
-            await _eventHubService.SendMessageAsync($"Result submitted: {result.ResultId} for assessment {assessment.Title} by user {user.Email} at {DateTime.UtcNow}");
+            // Send event to Event Hub (now as JSON)
+            var json = JsonSerializer.Serialize(new {
+                EventType = "ResultCreated",
+                ResultId = result.ResultId,
+                AssessmentId = result.AssessmentId,
+                AssessmentTitle = assessment.Title,
+                UserId = result.UserId,
+                UserEmail = user.Email,
+                Score = result.Score,
+                AttemptDate = result.AttemptDate,
+                Timestamp = DateTime.UtcNow
+            });
+            await _eventHubService.SendMessageAsync(json);
 
             var readDto = new ResultReadDTO
             {
@@ -205,8 +224,13 @@ namespace EduSyncProject.Controllers
             _context.Results.Remove(result);
             await _context.SaveChangesAsync();
 
-            // Send event to Event Hub
-            await _eventHubService.SendMessageAsync($"Result deleted: {id} at {DateTime.UtcNow}");
+            // Send event to Event Hub (now as JSON)
+            var json = JsonSerializer.Serialize(new {
+                EventType = "ResultDeleted",
+                ResultId = id,
+                Timestamp = DateTime.UtcNow
+            });
+            await _eventHubService.SendMessageAsync(json);
 
             return NoContent();
         }
